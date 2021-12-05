@@ -1,0 +1,83 @@
+configure options file
+
+/etc/bind/named.conf.options
+
+options {
+	directory "/var/cache/bind";
+
+	recursion yes;                 # enables resursive queries
+	allow-recursion { any; };  # allows recursive queries from "trusted" clients
+	listen-on { 0.0.0.0/0; };   # ns1 private IP address - listen on private network only
+	allow-transfer { none; };      # disable zone transfers by default
+
+	forwarders {
+		8.8.8.8;
+		8.8.4.4;
+	};
+};
+
+--------------------------------------------------------------------------------------------------------------
+
+/etc/bind/named.conf.local
+
+zone "dylanlab.xyz" {
+    type master;
+    file "/etc/bind/zones/db.dylanlab.xyz"; 	# zone file path
+    allow-transfer { OTHER_IP_ADDRESS_HERE; };           # ns2 private IP address - secondary
+};
+
+zone "20.0.10.in-addr.arpa" {
+    type master;
+    file "/etc/bind/zones/db.10.0.20";  # 10.128.0.0/16 subnet
+    allow-transfer { OTHER_IP_ADDRESS_HERE; };  # ns2 private IP address - secondary
+};
+
+
+--------------------------------------------------------------------------------------------------------------
+
+sudo mkdir /etc/bind/zones
+
+sudo cp /etc/bind/db.local /etc/bind/zones/db.nyc3.example.com
+
+sudo nano /etc/bind/zones/db.nyc3.example.com
+
+$TTL    604800
+@       IN      SOA     ns1.dylanlab.xyz. admin.dylanlab.xyz. (
+                  3     ; Serial
+             604800     ; Refresh
+              86400     ; Retry
+            2419200     ; Expire
+             604800 )   ; Negative Cache TTL
+;
+; name servers - NS records
+     IN      NS      ns1.dylanlab.xyz.
+     IN      NS      ns2.dylanlab.xyz.
+
+; name servers - A records
+ns1.dylanlab.xyz.          IN      A       10.128.10.11
+ns2.dylanlab.xyz.          IN      A       10.128.20.12
+
+; 10.128.0.0/16 - A records
+host1.nyc3.example.com.        IN      A      10.128.100.101
+host2.nyc3.example.com.        IN      A      10.128.200.102
+
+--------------------------------------------------------------------------------------------------------------
+
+/etc/bind/zones/db.10.0.20
+
+
+$TTL    604800
+@       IN      SOA     dylanlab.xyz. admin.dylanlab.xyz. (
+                              3         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+; name servers
+      IN      NS      ns1.dylanlab.xyz.
+      IN      NS      ns2.dylanlab.xyz.
+
+; PTR Records
+5   IN      PTR     ns1.dylanlab.xyz.    ; 10.0.20.5
+6   IN      PTR     ns2.dylanlab.xyz.    ; 10.0.20.6
+
