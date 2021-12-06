@@ -1,8 +1,13 @@
 - name: Install and Configure BIND9 on Ubuntu Hosts
-  hosts: ns1.dylanlab.xyz, ns2.dylanlab.xyz
+  hosts: dns
   become: yes
   ignore_errors: yes
   tasks:
+
+  - name: Print Hostnames
+    debug:
+      var: ansible_hostname
+
 
   - name: Apt Update
     apt:
@@ -19,18 +24,22 @@
   - name: Remove Existing Config Files
     file:
       state: absent
-      path: "{{ item }}""
+      path: "{{ item }}"
     with_items:
-      - "/etc/bind/named.conf.options"
-      - "/etc/bind/named.conf.local"
+      - /etc/bind/named.conf.options
+      - /etc/bind/named.conf.local
+      - /etc/bind/zones/db.dylanlab.xyz
+      - /etc/bind/zones/db.10.0.20
 
   - name: Create New Config Files
     file:
       state: touch
       path: "{{ item }}"
     with_items:
-      - "/etc/bind/named.conf.options"
-      - "/etc/bind/named.conf.local"
+      - /etc/bind/named.conf.options
+      - /etc/bind/named.conf.local
+      - /etc/bind/zones/db.dylanlab.xyz
+      - /etc/bind/zones/db.10.0.20
 
   - name: Make Zone Directory
     file:
@@ -38,9 +47,9 @@
       state: directory
 
   - name: Set named.conf.options Config File
-    blockinfile:
-      path: "/etc/bind/named.conf.options"
-      block: |
+    copy:
+      dest: "/etc/bind/named.conf.options"
+      content: |
         options {
           directory "/var/cache/bind";
 
@@ -56,9 +65,9 @@
         };
 
   - name: Set named.conf.local Config File - NS1
-    blockinfile:
-      path: "/etc/bind/named.conf.local"
-      block: |
+    copy:
+      dest: "/etc/bind/named.conf.local"
+      content: |
         zone "dylanlab.xyz" {
             type master;
             file "/etc/bind/zones/db.dylanlab.xyz"; 	# zone file path
@@ -70,12 +79,12 @@
             file "/etc/bind/zones/db.10.0.20";  # 10.128.0.0/16 subnet
             allow-transfer { 10.0.20.6; };  # ns2 private IP address - secondary
         };
-    when: {{ ansible_hostname }} == "ns1"
+    when: ansible_hostname == "ns1"
 
   - name: Set named.conf.local Config File - NS2
-    blockinfile:
-      path: "/etc/bind/named.conf.local"
-      block: |
+    copy:
+      dest: "/etc/bind/named.conf.local"
+      content: |
         zone "dylanlab.xyz" {
             type slave;
             file "/etc/bind/zones/db.dylanlab.xyz"; 	# zone file path
@@ -85,17 +94,17 @@
         zone "20.0.10.in-addr.arpa" {
             type slave;
             file "/etc/bind/zones/db.10.0.20";  # 10.128.0.0/16 subnet
-            masters { 10.0.20.6; };  # ns2 private IP address - secondary
+            masters { 10.0.20.5; };  # ns2 private IP address - secondary
         };
-    when: {{ ansible_hostname }} == "ns2"
+    when: ansible_hostname == "ns2"
 
   - name: Set named.conf.local Config File
-    blockinfile:
-      path: "/etc/bind/zones/db.dylanlab.xyz"
-      block: |
+    copy:
+      dest: "/etc/bind/zones/db.dylanlab.xyz"
+      content: |
         $TTL    604800
         @       IN      SOA     ns1.dylanlab.xyz. admin.dylanlab.xyz. (
-                          3     ; Serial
+                          4     ; Serial
                     604800     ; Refresh
                       86400     ; Retry
                     2419200     ; Expire
@@ -108,15 +117,15 @@
         ; name servers - A records
         ns1.dylanlab.xyz.          IN      A       10.128.10.5
         ns2.dylanlab.xyz.          IN      A       10.128.20.6
-    when: {{ ansible_hostname }} == "ns1"
+    when: ansible_hostname == "ns1"
 
   - name: Set named.conf.local Config File
-    blockinfile:
-      path: "/etc/bind/zones/db.dylanlab.xyz"
-      block: |
+    copy:
+      dest: "/etc/bind/zones/db.10.0.20"
+      content: |
         $TTL    604800
         @       IN      SOA     dylanlab.xyz. admin.dylanlab.xyz. (
-                                      3         ; Serial
+                                      4         ; Serial
                                 604800         ; Refresh
                                   86400         ; Retry
                                 2419200         ; Expire
@@ -128,7 +137,7 @@
         ; PTR Records
         5   IN      PTR     ns1.dylanlab.xyz.    ; 10.0.20.5
         6   IN      PTR     ns2.dylanlab.xyz.    ; 10.0.20.6
-    when: {{ ansible_hostname }} == "ns1"
+    when: ansible_hostname == "ns1"
 
   - name: Reload bind9
     systemd:
