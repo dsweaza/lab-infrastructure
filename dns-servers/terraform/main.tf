@@ -47,7 +47,7 @@ data "xenorchestra_network" "network" {
   pool_id = data.xenorchestra_pool.pool.id
 }
 
-resource "xenorchestra_cloud_config" "dns_config" {
+resource "xenorchestra_cloud_config" "cloud_config" {
     count = length(var.vm_names)
     name = "DNS Cloud Config"
     template = <<EOF
@@ -69,23 +69,28 @@ users:
 
 packages:
   - xe-guest-utilities
+EOF
+}
 
-#network:
-#  version: 2
-#  ethernets:
-#    eth0:
-#      match:
-#        name: eth0
-#      set-name: eth0
-#      addresses:
-#        - ${var.vm_ipv4_addresses[count.index]}
-#      gateway4: 10.0.20.1
-#      nameservers:
-#        search: [dylanlab.xyz]
-#        addresses:
-#          - 10.0.20.1
-#          - 8.8.8.8
-#          - 8.8.4.4
+resource "xenorchestra_cloud_config" "cloud_network_config" {
+    count = length(var.vm_names)
+    name = "DNS Cloud Config"
+    template = <<EOF
+network:
+  version: 1
+  config:
+    - type: physical
+      name: eth0
+      subnets:
+        - type: static
+          address: ${var.vm_ipv4_addresses[count.index]}
+          gateway: 10.0.20.1
+          dns_nameservers:
+            - 10.0.20.1
+            - 8.8.8.8
+            - 8.8.4.4
+          dns_search:
+            - dylanlab.xyz
 
 EOF
 }
@@ -97,7 +102,8 @@ resource "xenorchestra_vm" "server" {
     cpus = 2
     name_label = "${var.vm_names[count.index]}"
     template = data.xenorchestra_template.vm_template.id
-    cloud_config = xenorchestra_cloud_config.dns_config[count.index].template
+    cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
+    cloud_network_config = xenorchestra_cloud_config.cloud_network_config[count.index].template
 
     network {
         network_id = data.xenorchestra_network.network.id
