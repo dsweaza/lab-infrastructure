@@ -4,6 +4,13 @@
   ignore_errors: yes
   tasks:
 
+  - name: "loop through list"
+    debug:
+      msg: "Hostname: {{ item.hostname }}, IP: {{ item.ipv4 }}, type: {{ item.type }}"
+    with_items:
+      - { hostname: test.dylanlab.xyz, ipv4: 10.0.20.31, type: A}
+      - { hostname: test2.dylanlab.xyz, ipv4: 10.0.20.32, type: A}
+      - { hostname: test3.dylanlab.xyz, ipv4: 10.0.20.33, type: A}
   - name: Apt Update
     apt:
       update_cache: yes
@@ -23,7 +30,7 @@
     with_items:
       - /etc/bind/named.conf.options
       - /etc/bind/named.conf.local
-      - /var/lib/bind/zones/db.*
+      #- /var/lib/bind/zones/db.*
   
   - name: Make Zone Directory
     file:
@@ -45,8 +52,8 @@
     with_items:
       - /etc/bind/named.conf.options
       - /etc/bind/named.conf.local
-      - /var/lib/bind/zones/db.dylanlab.xyz
-      - /var/lib/bind/zones/db.10.0.20
+      #- /var/lib/bind/zones/db.dylanlab.xyz
+      #- /var/lib/bind/zones/db.10.0.20
 
   
   - name: Set named.conf.options Config File
@@ -108,9 +115,10 @@
     when: ansible_hostname == "ns2"
 
   - name: Set db.dylanlab.xyz Zone file
-    copy:
-      dest: "/var/lib/bind/zones/db.dylanlab.xyz"
-      content: |
+    blockinfile:
+      path: "/var/lib/bind/zones/db.dylanlab.xyz"
+      marker: "; {mark} Zone File"
+      block: |
         $TTL    604800
         @       IN      SOA     ns1.dylanlab.xyz. admin.dylanlab.xyz. (
                     {{ ansible_date_time.epoch }}     ; Serial
@@ -126,12 +134,14 @@
         ; name servers - A records
         ns1.dylanlab.xyz.          IN      A       10.0.20.5
         ns2.dylanlab.xyz.          IN      A       10.0.20.6
+        test4.dylanlab.xyz.          IN      A       10.0.20.34
     when: ansible_hostname == "ns1"
 
   - name: Set rdns Zone File
-    copy:
-      dest: "/var/lib/bind/zones/db.10.0.20"
-      content: |
+    blockinfile:
+      path: "/var/lib/bind/zones/db.10.0.20"
+      marker: "; {mark} Zone File"
+      block: |
         $TTL    604800
         @       IN      SOA     dylanlab.xyz. admin.dylanlab.xyz. (
                                 {{ ansible_date_time.epoch }}         ; Serial
@@ -146,6 +156,7 @@
         ; PTR Records
         10.0.20.5   IN      PTR     ns1.dylanlab.xyz.    ; 10.0.20.5
         10.0.20.6   IN      PTR     ns2.dylanlab.xyz.    ; 10.0.20.6
+        10.0.20.34   IN      PTR     test4.dylanlab.xyz.    ; 10.0.20.6
     when: ansible_hostname == "ns1"
 
   - name: Reload bind9
