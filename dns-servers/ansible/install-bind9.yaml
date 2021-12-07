@@ -4,16 +4,11 @@
   ignore_errors: yes
   tasks:
 
-  - name: Print Hostnames
-    debug:
-      var: ansible_hostname
-
-
   - name: Apt Update
     apt:
       update_cache: yes
 
-  - name: Install Docker from Apt
+  - name: Install Bind9 from Apt
     apt:
       name:
         - bind9 
@@ -28,24 +23,32 @@
     with_items:
       - /etc/bind/named.conf.options
       - /etc/bind/named.conf.local
-      - /etc/bind/zones/db.dylanlab.xyz
-      - /etc/bind/zones/db.10.0.20
+      - /var/lib/bind/zones/db.*
+  
+  - name: Make Zone Directory
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: root
+      group: bind
+      mode: '0775'
+    with_items:
+      - /var/lib/bind/zones
 
   - name: Create New Config Files
     file:
       state: touch
       path: "{{ item }}"
+      owner: root
+      group: bind
+      mode: '0775'
     with_items:
       - /etc/bind/named.conf.options
       - /etc/bind/named.conf.local
-      - /etc/bind/zones/db.dylanlab.xyz
-      - /etc/bind/zones/db.10.0.20
+      - /var/lib/bind/zones/db.dylanlab.xyz
+      - /var/lib/bind/zones/db.10.0.20
 
-  - name: Make Zone Directory
-    file:
-      path: "/etc/bind/zones"
-      state: directory
-
+  
   - name: Set named.conf.options Config File
     copy:
       dest: "/etc/bind/named.conf.options"
@@ -68,16 +71,22 @@
     copy:
       dest: "/etc/bind/named.conf.local"
       content: |
+        key "rndc-key" {
+            algorithm hmac-sha256;
+            secret "MebAHyF48jzn3I1Z/ipGm/N8mXLonXUWhl3HwaG2cRs=";
+        };
         zone "dylanlab.xyz" {
             type master;
-            file "/etc/bind/zones/db.dylanlab.xyz"; 	# zone file path
+            file "/var/lib/bind/zones/db.dylanlab.xyz"; 	# zone file path
             allow-transfer { 10.0.20.6; };           # ns2 private IP address - secondary
+            allow-update { key "rndc-key"; };
         };
 
         zone "20.0.10.in-addr.arpa" {
             type master;
-            file "/etc/bind/zones/db.10.0.20";  # 10.128.0.0/16 subnet
+            file "/var/lib/bind/zones/db.10.0.20";  # 10.0.20.0/24 subnet
             allow-transfer { 10.0.20.6; };  # ns2 private IP address - secondary
+            allow-update { key "rndc-key"; };
         };
     when: ansible_hostname == "ns1"
 
@@ -87,24 +96,24 @@
       content: |
         zone "dylanlab.xyz" {
             type slave;
-            file "/etc/bind/zones/db.dylanlab.xyz"; 	# zone file path
+            file "/var/lib/bind/zones/db.dylanlab.xyz"; 	# zone file path
             masters { 10.0.20.5; };           # ns2 private IP address - secondary
         };
 
         zone "20.0.10.in-addr.arpa" {
             type slave;
-            file "/etc/bind/zones/db.10.0.20";  # 10.128.0.0/16 subnet
+            file "/var/lib/bind/zones/db.10.0.20";  # 10.0.20.0/24 subnet
             masters { 10.0.20.5; };  # ns2 private IP address - secondary
         };
     when: ansible_hostname == "ns2"
 
   - name: Set named.conf.local Config File
     copy:
-      dest: "/etc/bind/zones/db.dylanlab.xyz"
+      dest: "/var/lib/bind/zones/db.dylanlab.xyz"
       content: |
         $TTL    604800
         @       IN      SOA     ns1.dylanlab.xyz. admin.dylanlab.xyz. (
-                          4     ; Serial
+                    {{ ansible_date_time.epoch }}     ; Serial
                     604800     ; Refresh
                       86400     ; Retry
                     2419200     ; Expire
@@ -115,17 +124,17 @@
             IN      NS      ns2.dylanlab.xyz.
 
         ; name servers - A records
-        ns1.dylanlab.xyz.          IN      A       10.128.10.5
-        ns2.dylanlab.xyz.          IN      A       10.128.20.6
+        ns1.dylanlab.xyz.          IN      A       10.0.20.5
+        ns2.dylanlab.xyz.          IN      A       10.0.20.6
     when: ansible_hostname == "ns1"
 
-  - name: Set named.conf.local Config File
+  - name: Set rdns Zone File
     copy:
-      dest: "/etc/bind/zones/db.10.0.20"
+      dest: "/var/lib/bind/zones/db.10.0.20"
       content: |
         $TTL    604800
         @       IN      SOA     dylanlab.xyz. admin.dylanlab.xyz. (
-                                      4         ; Serial
+                                {{ ansible_date_time.epoch }}         ; Serial
                                 604800         ; Refresh
                                   86400         ; Retry
                                 2419200         ; Expire
@@ -135,8 +144,8 @@
               IN      NS      ns2.dylanlab.xyz.
 
         ; PTR Records
-        5   IN      PTR     ns1.dylanlab.xyz.    ; 10.0.20.5
-        6   IN      PTR     ns2.dylanlab.xyz.    ; 10.0.20.6
+        10.0.20.5   IN      PTR     ns1.dylanlab.xyz.    ; 10.0.20.5
+        10.0.20.6   IN      PTR     ns2.dylanlab.xyz.    ; 10.0.20.6
     when: ansible_hostname == "ns1"
 
   - name: Reload bind9
