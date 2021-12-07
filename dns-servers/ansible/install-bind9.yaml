@@ -107,7 +107,7 @@
         };
     when: ansible_hostname == "ns2"
 
-  - name: Set named.conf.local Config File
+  - name: Set db.dylanlab.xyz Zone file
     copy:
       dest: "/var/lib/bind/zones/db.dylanlab.xyz"
       content: |
