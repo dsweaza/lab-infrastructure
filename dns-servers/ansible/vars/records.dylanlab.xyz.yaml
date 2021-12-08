@@ -1,0 +1,23 @@
+# Do not include NS records
+# Include FQDN with . for PTR Records
+---
+records:
+  - host: test333
+    type: A
+    value: 10.0.20.33
+    record_state: present
+  
+  - host: test335
+    type: A
+    value: 10.0.20.35
+    record_state: present
+
+  - host: test336
+    type: A
+    value: 10.0.20.36
+    record_state: absent
+
+  - host: test337
+    type: A
+    value: 10.0.20.37
+    record_state: absent

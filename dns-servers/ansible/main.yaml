@@ -1,0 +1,80 @@
+- name: Install and Configure BIND9 on Ubuntu
+  hosts: dns
+  become: yes
+  ignore_errors: yes
+  tasks:
+
+    - name: Load Variables
+      include_vars: "{{ item }}"
+      with_items:
+        - "vars/zones.yaml"
+
+    - name: Apt Update
+      apt:
+        update_cache: yes
+      changed_when: false
+
+    - name: Install Bind9 from Apt
+      apt:
+        name:
+          - bind9 
+          - bind9utils
+          - bind9-doc
+        state: present
+    
+    - name: Make Directories
+      file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: bind
+        mode: '0775'
+      with_items:
+        - /var/lib/bind/zones
+
+    - name: Set named.conf.options
+      template:
+        src: templates/named.conf.options.j2
+        dest: /etc/bind/named.conf.options
+      notify: reload_bind
+
+    - name: Set Master named.conf.local
+      template:
+        src: templates/named.conf.local.master.j2
+        dest: /etc/bind/named.conf.local
+      notify: reload_bind
+      when: ansible_hostname == "ns1"
+      with_items:
+        - "{{ zones }}"
+
+    - name: Set Slave named.conf.local
+      template:
+        src: templates/named.conf.local.slave.j2
+        dest: /etc/bind/named.conf.local
+      notify: reload_bind
+      when: ansible_hostname != "ns1"
+      with_items:
+        - "{{ zones }}"
+    
+    # ZONE FILES ARE ONLY PLACED IN MASTER
+    # IF ZONE FILES DON'T EXIST, CREATE THEM
+    - name: Configure Master Zone Files
+      block:
+        - name: Set variables on an imported playbook
+          include_tasks: zone-update.yaml
+          vars:
+            zone: "{{ outer_item }}"
+          with_items: 
+            - "{{ zones }}"
+          loop_control:
+            loop_var: outer_item
+      
+      when: ansible_hostname == "ns1"
+        
+
+
+  handlers:
+    - name: reload_bind
+      service: 
+        name: bind9 
+        state: reloaded

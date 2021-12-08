@@ -1,0 +1,38 @@
+## Included from main.yaml
+---
+- name: Load Zone Records - {{ zone.domain }}
+  include_vars: 
+    file: "{{ item }}"
+  with_items:
+    - "vars/records.{{ zone.domain }}.yaml"
+    - "vars/vars.yaml"
+
+- name: Freeze Zone - {{ zone.domain }}
+  shell: "rndc freeze {{ zone.domain }}"
+  changed_when: false
+    
+- name: Check if Zone File Exists - {{ zone.domain }}
+  stat: 
+    path: /var/lib/bind/zones/{{ zone.file }}
+  register: zone_file_exists
+  
+- name: Create Zone Files - {{ zone.domain }}
+  template:
+    src: templates/zone.j2
+    dest: /var/lib/bind/zones/{{ zone.file }}
+  notify: reload_bind
+  when: zone_file_exists.stat.exists == false
+  
+- name: Check All Records Exist - {{ zone.domain }}
+  lineinfile:
+    path: /var/lib/bind/zones/{{ zone.file }}
+    state: "{{ item.record_state | default(omit) }}"
+    regexp: \b{{ item.host }}\.{{ zone.domain }}\b
+    line: "{{ item.host }}.{{ zone.domain }}. IN {{ item.type }} {{ item.value }}"
+  with_items:
+    - "{{ records }}"
+  #when: zone_file_exists.stat.exists == true
+
+- name: Thaw Zone - {{ zone.domain }}
+  shell: "rndc thaw {{ zone.domain }}"
+  changed_when: false

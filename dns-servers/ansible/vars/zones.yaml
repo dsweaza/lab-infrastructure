@@ -1,0 +1,7 @@
+---
+zones:
+  - domain: dylanlab.xyz
+    file: db.dylanlab.xyz
+  
+  - domain: 20.0.10.in-addr.arpa
+    file: db.20.0.10.in-addr.arpa

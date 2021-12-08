@@ -1,0 +1,25 @@
+$TTL {{ zone_config.ttl }}
+
+@       IN  SOA {{ zone_config.nameservers[0].hostname }}.{{ zone_config.domain }}. {{ zone_config.admin_email }}.{{ zone_config.domain }}. (
+        {{ zone_config.soa_serial }}       ; serial
+        {{ zone_config.soa_refresh }}      ; refresh
+        {{ zone_config.soa_retry }}        ; retry
+        {{ zone_config.soa_expire }}       ; expire
+        {{ zone_config.soa_minimum }}      ; minimum
+        )
+        
+        {% for nameserver in zone_config.nameservers %}
+        IN NS {{ nameserver.hostname }}.{{ zone_config.domain }}.
+        {% endfor %}
+
+; NAMESERVERS                  
+{% for nameserver in zone_config.nameservers %}
+{% if 'in-addr.arpa' in zone.domain %}
+{{ nameserver.rdns_ipv4 }}. IN PTR {{ nameserver.hostname }}.{{ zone_config.domain }}.
+{% else %}
+{{ nameserver.hostname }}.{{ zone_config.domain }}. IN A {{ nameserver.ipv4 }}
+{% endif %}
+{% endfor %}
+
+; ANSIBLE LOADED RECORDS
+

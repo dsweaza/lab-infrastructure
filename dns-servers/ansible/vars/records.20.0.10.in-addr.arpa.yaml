@@ -1,0 +1,13 @@
+# Do not include NS records
+# Include FQDN with . for PTR Records
+---
+records:
+  - host: 33
+    type: PTR
+    value: test333.dylanlab.xyz.
+    record_state: present
+  
+  - host: 35
+    type: PTR
+    value: test335.dylanlab.xyz.
+    record_state: present

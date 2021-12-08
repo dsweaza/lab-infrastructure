@@ -1,0 +1,11 @@
+# SLAVE SERVER - named.conf.local
+
+{% for zone in zones %}
+
+zone "{{ zone.domain }}" {
+    type slave;
+    file "/var/lib/bind/zones/{{ zone.file }}";
+    masters { 10.0.20.5; };
+};
+
+{% endfor %}
