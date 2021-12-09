@@ -74,7 +74,6 @@ resource "xenorchestra_vm" "server" {
     template = data.xenorchestra_template.ubuntu_focal_2004_cloudimg_20211202.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
     cloud_network_config = xenorchestra_cloud_config.cloud_network_config[count.index].template
-    wait_for_ip = true
 
     network {
         network_id = data.xenorchestra_network.shopnet.id
