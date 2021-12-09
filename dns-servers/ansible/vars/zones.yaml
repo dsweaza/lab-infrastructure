@@ -1,13 +1,13 @@
 ---
 zones:
   - domain: dylanlab.xyz
+    rndckey: rndc-key
     bind9allowupdate:
-      - "key rndc-key"
     bind9allowtransfer:
       - 10.0.20.6
   
   - domain: 20.0.10.in-addr.arpa
+    rndckey: rndc-key
     bind9allowupdate:
-      - "key rndc-key"
     bind9allowtransfer:
       - 10.0.20.6

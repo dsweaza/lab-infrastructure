@@ -6,16 +6,23 @@ zone "{{ zone.domain }}" {
     file "/var/lib/bind/zones/db.{{ zone.domain }}";
     {% if zone.bind9allowtransfer is defined %}
     allow-transfer { 
+        {% if zone.bind9allowtransfer is iterable %}
         {% for allowtransfer in zone.bind9allowtransfer %}
         {{ allowtransfer }}; 
         {% endfor %}
+        {% endif %}
     };
     {% endif %}
-    {% if zone.bind9allowupdate is defined %}
+    {% if zone.bind9allowupdate is defined or zone.rndckey is defined %}
     allow-update { 
+        {% if zone.rndckey is defined %}
+        key {{ zone.rndckey }}
+        {% endif %}
+        {% if zone.bind9allowupdate is iterable %}
         {% for allowupdate in zone.bind9allowupdate %}
         {{ allowupdate }}; 
         {% endfor %} 
+        {% endif %}
     };
     {% endif %}
 };
