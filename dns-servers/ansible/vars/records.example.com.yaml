@@ -1,25 +1,25 @@
 # Do not include NS records
 # When value is FQDN, include . on end
 #
-# BASE DOMAIN: dylanlab.xyz
+# BASE DOMAIN: example.com
 ---
 records:
-  - host: test333
+  - host: subdomain1
     type: A
     value: 10.0.20.33
     record_state: present
   
-  - host: test335
+  - host: subdomain2
     type: A
     value: 10.0.20.35
     record_state: present
 
-  - host: test336
+  - host: subdomain3
     type: A
     value: 10.0.20.36
-    record_state: absent
+    record_state: absent #To remove a zone, change record_state to absent, if you simply delete it, the records wont delete
 
-  - host: test337
+  - host: subdomain4
     type: A
     value: 10.0.20.37
     record_state: absent

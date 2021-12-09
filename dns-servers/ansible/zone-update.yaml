@@ -13,19 +13,19 @@
     
 - name: Check if Zone File Exists - {{ zone.domain }}
   stat: 
-    path: /var/lib/bind/zones/{{ zone.file }}
+    path: /var/lib/bind/zones/db.{{ zone.domain }}
   register: zone_file_exists
   
 - name: Create Zone Files - {{ zone.domain }}
   template:
     src: templates/zone.j2
-    dest: /var/lib/bind/zones/{{ zone.file }}
+    dest: /var/lib/bind/zones/db.{{ zone.domain }}
   notify: reload_bind
   when: zone_file_exists.stat.exists == false
   
 - name: Check All Records Exist - {{ zone.domain }}
   lineinfile:
-    path: /var/lib/bind/zones/{{ zone.file }}
+    path: /var/lib/bind/zones/db.{{ zone.domain }}
     state: "{{ item.record_state | default(omit) }}"
     regexp: \b{{ item.host }}\.{{ zone.domain }}\b
     line: "{{ item.host }}.{{ zone.domain }}. IN {{ item.type }} {{ item.value }}"

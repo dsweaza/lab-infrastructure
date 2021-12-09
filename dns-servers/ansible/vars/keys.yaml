@@ -1,0 +1,6 @@
+---
+keys:
+  - name: rndc-key
+    algorithm: hmac-sha256
+    secret: QZnULB75ySdwR1CNHx3Bjx6CXJKQBa/jcjTfPceoBXU=
+  

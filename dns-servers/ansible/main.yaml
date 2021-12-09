@@ -7,7 +7,9 @@
     - name: Load Variables
       include_vars: "{{ item }}"
       with_items:
+        - "vars/vars.yaml"
         - "vars/zones.yaml"
+        - "vars/keys.yaml"
 
     - name: Apt Update
       apt:
@@ -44,8 +46,13 @@
         dest: /etc/bind/named.conf.local
       notify: reload_bind
       when: ansible_hostname == "ns1"
-      with_items:
-        - "{{ zones }}"
+
+    - name: Set Master rndc.key
+      template:
+        src: templates/rndc.key.j2
+        dest: /etc/bind/rndc.key
+      notify: reload_bind
+      when: ansible_hostname == "ns1"
 
     - name: Set Slave named.conf.local
       template:
@@ -53,8 +60,6 @@
         dest: /etc/bind/named.conf.local
       notify: reload_bind
       when: ansible_hostname != "ns1"
-      with_items:
-        - "{{ zones }}"
     
     # ZONE FILES ARE ONLY PLACED IN MASTER
     # IF ZONE FILES DON'T EXIST, CREATE THEM

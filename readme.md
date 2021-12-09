@@ -28,22 +28,28 @@ It is assumed you have the following already in place:
 * Rancher (if deploying the Kubernetes Cluster)
 
 
-## Setup
+## Global Setup
 
 1. Clone the repo
     ```sh
     git clone https://github.com/dsweaza/lab-infrastructure.git
     ```
-2. Set the environment variables
+
+2. SSH Keys
+    * Generate SSH Keys for `admin` and `ansible` users
+    * Put Ansible private key at `~/.ssh/ansible_id_rsa`
+    * Set public keys for both user in environment variables below
+
+3. Set the environment variables
     ```sh
     export XOA_URL=ws://YOUR.XOA.IP
     export XOA_USER=YOUR_XOA_USER
     export XOA_PASSWORD=YOUR_XOA_PASSWORD
-    export TF_VAR_ANSIBLE_SSH_RSA="YOUR_ANSIBLE_PUBLIC_KEY"
-    export TF_VAR_DYLAN_SSH_RSA="YOUR_PERSONAL_PUBLIC_KEY"
+    export TF_VAR_public_key_ansible="YOUR ANSIBLE USER PUBLIC KEY"
+    export TF_VAR_public_key_admin="YOUR ADMINISTRATOR USER PUBLIC KEY"
+    export TF_VAR_username_ansible="ANSIBLE USERNAME" # DEFAULTS TO 'ANSIBLE'
+    export TF_VAR_username_admin="ADMINISTRATOR USERNAME" #DEFAULTS TO 'ADMIN'
    ```
-3. Ansible Private Key
-    * Scripts assume key is at `~/.ssh/ansible_id_rsa`
 
 
 <!-- USAGE EXAMPLES -->

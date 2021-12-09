@@ -1,7 +1,13 @@
 ---
 zones:
   - domain: dylanlab.xyz
-    file: db.dylanlab.xyz
+    bind9allowupdate:
+      - key "rndc-key"
+    bind9allowtransfer:
+      - 10.0.20.6
   
   - domain: 20.0.10.in-addr.arpa
-    file: db.20.0.10.in-addr.arpa
+    bind9allowupdate:
+      - key "rndc-key"
+    bind9allowtransfer:
+      - 10.0.20.6

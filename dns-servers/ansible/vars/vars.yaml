@@ -5,7 +5,7 @@ zone_config:
 
   # First in list will be considered master
   # Do not include zone_domain in hostname: "ns1", "ns2"
-  # ipv4_r is the RDNS IP
+  # ipv4_r is the IPv4 RDNS Domain
   nameservers:
     - hostname: ns1
       ipv4: 10.0.20.5
@@ -14,6 +14,12 @@ zone_config:
       ipv4: 10.0.20.6
       rdns_ipv4: 6.20.0.10.in-addr.arpa
 
+  forwarders:
+    - 8.8.8.8
+    - 8.8.4.4
+    - 208.67.222.222
+    - 208.67.220.220
+    
   ttl: 604801
   soa_serial: 100
   soa_refresh: 604800

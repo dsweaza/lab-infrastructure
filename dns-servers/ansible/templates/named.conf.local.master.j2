@@ -1,17 +1,22 @@
 # MASTER SERVER - named.conf.local
 
-key "rndc-key" {
-    algorithm hmac-sha256;
-    secret "MebAHyF48jzn3I1Z/ipGm/N8mXLonXUWhl3HwaG2cRs=";
-};
-
 {% for zone in zones %}
-
 zone "{{ zone.domain }}" {
     type master;
-    file "/var/lib/bind/zones/{{ zone.file }}";
-    allow-transfer { 10.0.20.6; };
-    allow-update { key "rndc-key"; };
+    file "/var/lib/bind/zones/db.{{ zone.domain }}";
+    {% if zone.bind9allowtransfer is defined %}
+    allow-transfer { 
+        {% for allowtransfer in zone.bind9allowtransfer %}
+        {{ allowtransfer }}; 
+        {% endfor %}
+    };
+    {% endif %}
+    {% if zone.bind9allowupdate is defined %}
+    allow-update { 
+        {% for allowupdate in zone.bind9allowupdate %}
+        {{ allowupdate }}; 
+        {% endfor %} 
+    };
+    {% endif %}
 };
-
 {% endfor %}

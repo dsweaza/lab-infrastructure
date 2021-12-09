@@ -1,11 +1,9 @@
 # SLAVE SERVER - named.conf.local
 
 {% for zone in zones %}
-
 zone "{{ zone.domain }}" {
     type slave;
-    file "/var/lib/bind/zones/{{ zone.file }}";
-    masters { 10.0.20.5; };
+    file "/var/lib/bind/zones/db.{{ zone.domain }}";
+    masters { {{ zone_config.nameservers[0].ipv4 }}; };
 };
-
 {% endfor %}
