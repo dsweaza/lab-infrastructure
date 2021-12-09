@@ -1,0 +1,36 @@
+- name: Install and Configure ISC DHCP on Ubuntu Hosts
+  hosts: dhcp.dylanlab.xyz
+  become: yes
+  ignore_errors: yes
+  tasks:
+
+    - name: Load Variables
+      include_vars: "{{ item }}"
+      with_items:
+        - "vars/subnets.yaml"
+        - "../../dns-servers/ansible/vars/zones.yaml"
+        - "../../dns-servers/ansible/vars/vars.yaml"
+        - "../../dns-servers/ansible/vars/keys.yaml"
+
+    - name: Apt Update
+      apt:
+        update_cache: yes
+      changed_when: false
+
+    - name: Install isc-dhcp-server from Apt
+      apt:
+        name:
+          - isc-dhcp-server
+        state: present
+
+    - name: Set named.conf.options Config File
+      template:
+        src: "templates/dhcpd.conf.j2"
+        dest: "/etc/dhcp/dhcpd.conf"
+      notify: reload_isc
+
+  handlers:
+    - name: reload_isc
+      systemd:
+        name: isc-dhcp-server
+        state: restarted

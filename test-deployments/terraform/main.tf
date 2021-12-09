@@ -5,7 +5,7 @@ variable "vm_count" {
 
 variable "vm_name_prefix" {
     type = string 
-    default = "us20-dns-"
+    default = "us20-test-"
 }
 
 variable "dns_suffix" {
@@ -13,12 +13,12 @@ variable "dns_suffix" {
     default = ".dylanlab.xyz"
 }
 
-variable "ANSIBLE_SSH_RSA" {
+variable "public_key_ansible" {
     type = string
     description = "Ansibles authorized key - from env"
 }
 
-variable "DYLAN_SSH_RSA" {
+variable "public_key_admin" {
     type = string
     description = "Dylan authorized key - from env"
 }
@@ -48,7 +48,7 @@ data "xenorchestra_sr" "sr" {
 }
 
 data "xenorchestra_network" "network" {
-    name_label = "50 - ShopNet"
+    name_label = "50-shopnet"
     pool_id = data.xenorchestra_pool.pool.id
 }
 
@@ -69,13 +69,13 @@ users:
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ${var.DYLAN_SSH_RSA}
+      - ${var.public_key_admin}
   - name: ansible
     gecos: ansible
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ${var.ANSIBLE_SSH_RSA}
+      - ${var.public_key_ansible}
 
 packages:
   - xe-guest-utilities

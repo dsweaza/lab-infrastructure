@@ -1,0 +1,37 @@
+ddns-updates on;
+ddns-update-style interim;
+update-static-leases on;
+authoritative;
+allow unknown-clients;
+use-host-decl-names on;
+default-lease-time 1814400; #21 days
+max-lease-time 1814400; #21 days
+log-facility local7;
+
+# Generate with Ansible from DNS
+{% for key in keys %}
+key {{ key.name }} {
+    algorithm {{ key.algorithm }};
+    secret "{{ key.secret }}";
+}
+{% endfor %}
+
+# Generate with Ansible from DNS
+{% for zone in zones %}
+zone {{ zone.domain }}. {
+    primary {{ zone_config.nameservers[0].ipv4 }}; 
+    key {{ zone.rndckey }}; 
+}
+{% endfor %}
+
+{% for subnet in subnets %}
+subnet {{ subnet.subnet }} netmask {{ subnet.netmask }} {
+    range {{ subnet.range.start }} {{ subnet.range.end }};
+    option subnet-mask {{ subnet.netmask }};
+    option routers {{ subnet.options.routers | join(", ") }};
+    option domain-name-servers  {{ subnet.options.dns | join(", ") }};
+    option domain-name "{{ subnet.options.search_domain }}";
+    ddns-domainname "{{ subnet.ddns.domainname }}";
+    ddns-rev-domainname "{{ subnet.ddns.revdomainname }}";
+}
+{% endfor %}

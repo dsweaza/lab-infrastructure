@@ -1,0 +1,17 @@
+---
+subnets:
+  - subnet: 10.0.20.0
+    netmask: 255.255.255.0
+    range:
+      start: 10.0.20.50
+      end: 10.0.20.250
+    options:
+      routers: 
+        - 10.0.20.1
+      dns:
+        - 10.0.20.5
+        - 10.0.20.6
+      search_domain: dylanlab.xyz
+    ddns:
+      domainname: dylanlab.xyz
+      revdomainname: in-addr.arpa #should be 20.0.10.in-addr.arpa?
