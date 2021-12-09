@@ -1,50 +1,20 @@
-variable "vm_names" {
-  type = list(string)
-  default = ["ns1.dylanlab.xyz", "ns2.dylanlab.xyz"]
-}
 
-variable "vm_ipv4_addresses" {
-  type = list(string)
-  default = ["10.0.20.5/24", "10.0.20.6/24"]
-}
-
-variable "ANSIBLE_SSH_RSA" {
-    type = string
-    description = "Ansibles authorized key - from env"
-}
-
-variable "DYLAN_SSH_RSA" {
-    type = string
-    description = "Dylan authorized key - from env"
-}
-
-# Instruct terraform to download the provider on `terraform init`
-terraform {
-  required_providers {
-    xenorchestra = {
-      source = "terra-farm/xenorchestra"
-      version = "~> 0.20.0"
-    }
-  }
-}
-
-# vm.tf
 data "xenorchestra_pool" "pool" {
-  name_label = "xcp-ng-01"
+    name_label = "xcp-ng-01"
 }
 
-data "xenorchestra_template" "vm_template" {
-  name_label = "ubuntu-focal-20.04-cloudimg-20211202"
+data "xenorchestra_template" "ubuntu_focal_2004_cloudimg_20211202" {
+    name_label = "ubuntu-focal-20.04-cloudimg-20211202"
 }
 
-data "xenorchestra_sr" "sr" {
-  name_label = "Local storage"
-  pool_id = data.xenorchestra_pool.pool.id
+data "xenorchestra_sr" "local_storage" {
+    name_label = "Local storage"
+    pool_id = data.xenorchestra_pool.pool.id
 }
 
-data "xenorchestra_network" "network" {
-  name_label = "50 - ShopNet"
-  pool_id = data.xenorchestra_pool.pool.id
+data "xenorchestra_network" "shopnet" {
+    name_label = "50-shopnet"
+    pool_id = data.xenorchestra_pool.pool.id
 }
 
 resource "xenorchestra_cloud_config" "cloud_config" {
@@ -54,18 +24,18 @@ resource "xenorchestra_cloud_config" "cloud_config" {
 #cloud-config
 hostname: ${var.vm_names[count.index]}
 users:
-  - name: dylan
-    gecos: dylan
+  - name: ${var.username_admin}
+    gecos: ${var.username_admin}
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ${var.DYLAN_SSH_RSA}
-  - name: ansible
-    gecos: ansible
+      - ${var.public_key_admin}
+  - name: ${var.username_ansible}
+    gecos: ${var.username_ansible}
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ${var.ANSIBLE_SSH_RSA}
+      - ${var.public_key_ansible}
 
 packages:
   - xe-guest-utilities
@@ -84,13 +54,13 @@ network:
       subnets:
         - type: static
           address: ${var.vm_ipv4_addresses[count.index]}
-          gateway: 10.0.20.1
+          gateway: ${var.default_gateway}
           dns_nameservers:
-            - 10.0.20.1
+            - ${var.default_gateway}
             - 8.8.8.8
             - 8.8.4.4
           dns_search:
-            - dylanlab.xyz
+            - ${var.dns_search_domain}
 
 EOF
 }
@@ -101,16 +71,16 @@ resource "xenorchestra_vm" "server" {
     memory_max = 4294967296
     cpus = 2
     name_label = "${var.vm_names[count.index]}"
-    template = data.xenorchestra_template.vm_template.id
+    template = data.xenorchestra_template.ubuntu_focal_2004_cloudimg_20211202.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
     cloud_network_config = xenorchestra_cloud_config.cloud_network_config[count.index].template
 
     network {
-        network_id = data.xenorchestra_network.network.id
+        network_id = data.xenorchestra_network.shopnet.id
     }
 
     disk {
-        sr_id = data.xenorchestra_sr.sr.id
+        sr_id = data.xenorchestra_sr.local_storage.id
         name_label = "${var.vm_names[count.index]}"
         size = 50212254720
     }

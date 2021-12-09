@@ -43,7 +43,7 @@ data "xenorchestra_sr" "sr" {
 }
 
 data "xenorchestra_network" "network" {
-  name_label = "50 - ShopNet"
+  name_label = "50-shopnet"
   pool_id = data.xenorchestra_pool.pool.id
 }
 

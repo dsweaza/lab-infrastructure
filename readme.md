@@ -42,10 +42,8 @@ It is assumed you have the following already in place:
     export TF_VAR_ANSIBLE_SSH_RSA="YOUR_ANSIBLE_PUBLIC_KEY"
     export TF_VAR_DYLAN_SSH_RSA="YOUR_PERSONAL_PUBLIC_KEY"
    ```
-3. Clone the repo
-    ```sh
-    git clone https://github.com/dsweaza/lab-infrastructure.git
-    ```
+3. Ansible Private Key
+    * Scripts assume key is at `~/.ssh/ansible_id_rsa`
 
 
 <!-- USAGE EXAMPLES -->
