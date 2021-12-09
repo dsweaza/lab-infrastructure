@@ -1,34 +1,3 @@
-variable "vm_names" {
-  type = list(string)
-  default = ["dhcp.dylanlab.xyz"]
-}
-
-variable "vm_ipv4_addresses" {
-  type = list(string)
-  default = ["10.0.20.4/24"]
-}
-
-variable "ANSIBLE_SSH_RSA" {
-    type = string
-    description = "Ansibles authorized key - from env"
-}
-
-variable "DYLAN_SSH_RSA" {
-    type = string
-    description = "Dylan authorized key - from env"
-}
-
-# Instruct terraform to download the provider on `terraform init`
-terraform {
-  required_providers {
-    xenorchestra = {
-      source = "terra-farm/xenorchestra"
-      version = "~> 0.20.0"
-    }
-  }
-}
-
-# vm.tf
 data "xenorchestra_pool" "pool" {
   name_label = "xcp-ng-01"
 }
@@ -54,18 +23,18 @@ resource "xenorchestra_cloud_config" "cloud_config" {
 #cloud-config
 hostname: ${var.vm_names[count.index]}
 users:
-  - name: dylan
-    gecos: dylan
+  - name: ${var.username_admin}
+    gecos: ${var.username_admin}
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ${var.DYLAN_SSH_RSA}
-  - name: ansible
-    gecos: ansible
+      - ${var.public_key_admin}
+  - name: ${var.username_ansible}
+    gecos: ${var.username_ansible}
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
-      - ${var.ANSIBLE_SSH_RSA}
+      - ${var.public_key_ansible}
 
 packages:
   - xe-guest-utilities
@@ -84,20 +53,20 @@ network:
       subnets:
         - type: static
           address: ${var.vm_ipv4_addresses[count.index]}
-          gateway: 10.0.20.1
+          gateway: ${var.default_gateway}
           dns_nameservers:
             - 10.0.20.5
             - 10.0.20.6
           dns_search:
-            - dylanlab.xyz
+            - ${var.dns_search_domain}
 EOF
 }
 
 resource "xenorchestra_vm" "server" {
     count = length(var.vm_names)
 
-    memory_max = 4294967296
-    cpus = 2
+    memory_max = var.vm_memory_size_gb * 1024 * 1024 * 1024 # GB to B
+    cpus = var.vm_cpu_count
     name_label = "${var.vm_names[count.index]}"
     template = data.xenorchestra_template.vm_template.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
@@ -110,7 +79,7 @@ resource "xenorchestra_vm" "server" {
     disk {
         sr_id = data.xenorchestra_sr.sr.id
         name_label = "${var.vm_names[count.index]}"
-        size = 50212254720
+        size = var.vm_disk_size_gb * 1024 * 1024 * 1024 # GB to B
     }
 }
 
