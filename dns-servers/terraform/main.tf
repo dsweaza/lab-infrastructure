@@ -18,11 +18,11 @@ data "xenorchestra_network" "shopnet" {
 }
 
 resource "xenorchestra_cloud_config" "cloud_config" {
-    count = length(var.vm_names)
+    count = length(var.ipv4_addresses)
     name = "DNS Cloud Config"
     template = <<EOF
 #cloud-config
-hostname: ${var.vm_names[count.index]}
+hostname: ${var.hostname_prefix}${(count.index + 1)}.${var.base_domain}
 users:
   - name: ${var.username_admin}
     gecos: ${var.username_admin}
@@ -43,7 +43,7 @@ EOF
 }
 
 resource "xenorchestra_cloud_config" "cloud_network_config" {
-    count = length(var.vm_names)
+    count = length(var.ipv4_addresses)
     name = "DNS Cloud Config"
     template = <<EOF
 network:
@@ -53,27 +53,28 @@ network:
       name: eth0
       subnets:
         - type: static
-          address: ${var.vm_ipv4_addresses[count.index]}
+          address: ${var.ipv4_addresses[count.index]}${var.ipv4_addresses_cidr}
           gateway: ${var.default_gateway}
           dns_nameservers:
             - ${var.default_gateway}
             - 8.8.8.8
             - 8.8.4.4
           dns_search:
-            - ${var.dns_search_domain}
+            - ${var.base_domain}
 
 EOF
 }
 
 resource "xenorchestra_vm" "server" {
-    count = length(var.vm_names)
+    count = length(var.ipv4_addresses)
 
     memory_max = 4294967296
     cpus = 2
-    name_label = "${var.vm_names[count.index]}"
+    name_label = "${var.hostname_prefix}${(count.index + 1)}.${var.base_domain}"
     template = data.xenorchestra_template.ubuntu_focal_2004_cloudimg_20211202.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
     cloud_network_config = xenorchestra_cloud_config.cloud_network_config[count.index].template
+    wait_for_ip = true
 
     network {
         network_id = data.xenorchestra_network.shopnet.id
@@ -81,7 +82,7 @@ resource "xenorchestra_vm" "server" {
 
     disk {
         sr_id = data.xenorchestra_sr.local_storage.id
-        name_label = "${var.vm_names[count.index]}"
+        name_label = "${var.hostname_prefix}${(count.index + 1)}.${var.base_domain}"
         size = 50212254720
     }
 }

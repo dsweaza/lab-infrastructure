@@ -1,5 +1,5 @@
 - name: Install and Configure ISC DHCP on Ubuntu Hosts
-  hosts: dhcp.dylanlab.xyz
+  hosts: dhcp
   become: yes
   ignore_errors: yes
   tasks:
@@ -22,7 +22,7 @@
         ddns-update-style interim;
         update-static-leases on;
         authoritative;
-        key rndc-key { algorithm hmac-sha256; secret "MebAHyF48jzn3I1Z/ipGm/N8mXLonXUWhl3HwaG2cRs=";}
+        key rndc-key { algorithm hmac-sha256; secret "QZnULB75ySdwR1CNHx3Bjx6CXJKQBa/jcjTfPceoBXU=";}
         allow unknown-clients;
         use-host-decl-names on;
         default-lease-time 1814400; #21 days

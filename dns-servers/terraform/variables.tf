@@ -1,25 +1,32 @@
 # Set these variables in environment or terraform.tfvars
 
-variable "vm_names" {
-    description = "List of FQDN of DNS Servers"
+variable "base_domain" {
+    description = "Base domain name"
+    type = string
+    default = "dylanlab.xyz"
+}
+
+variable "ipv4_addresses" {
+    description = "List of IPv4 Addresses for DNS Servers"
     type = list(string)
 }
 
-variable "vm_ipv4_addresses" {
-    description = "List of CIDR IPv4 Addresses of DNS Servers"
-    type = list(string)
+variable "ipv4_addresses_cidr" {
+    description = "CIDR of ipv4_addresses Above"
+    type = string
+    default = "/24"
+}
+
+variable "hostname_prefix" {
+    description = "Server hostname prefix"
+    type = string
+    default = "ns" # Terraform creates predicable naming: ns1, ns2, ...
 }
 
 variable "default_gateway" {
     description = "Default Gateway IPv4"
     type = string
     default = "10.0.20.1"
-}
-
-variable "dns_search_domain" {
-    description = "DNS Search Domain"
-    type = string
-    default = "dylanlab.xyz"
 }
 
 variable "username_ansible" {

@@ -48,7 +48,7 @@ Launches defined number of BIND9 servers on Ubuntu 20.04 VMs on XCP-NG. All zone
     ```sh
     terraform apply
     ```
-4. The virtual machines should be deployed and you will get an output with the hostnames and IP addresses
+4. The virtual machines should be deployed and you will get an output with the hostnames and IP addresses.
 
 ## Ansible
 
