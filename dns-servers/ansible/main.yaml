@@ -21,7 +21,6 @@
         name:
           - bind9 
           - bind9utils
-          - bind9-doc
         state: present
     
     - name: Make Directories
@@ -51,8 +50,14 @@
       template:
         src: templates/rndc.key.j2
         dest: /etc/bind/rndc.key
-      notify: reload_bind
+      register: rndc_key
       when: ansible_hostname == "ns1"
+
+    - name: Restart BIND9 due to key change
+      service:
+        name: bind9
+        state: restarted
+      when: rndc_key.changed
 
     - name: Set Slave named.conf.local
       template:
@@ -60,20 +65,15 @@
         dest: /etc/bind/named.conf.local
       notify: reload_bind
       when: ansible_hostname != "ns1"
-    
-    # ZONE FILES ARE ONLY PLACED IN MASTER
-    # IF ZONE FILES DON'T EXIST, CREATE THEM
+        
     - name: Configure Master Zone Files
-      block:
-        - name: Set variables on an imported playbook
-          include_tasks: zone-update.yaml
-          vars:
-            zone: "{{ outer_item }}"
-          with_items: 
-            - "{{ zones }}"
-          loop_control:
-            loop_var: outer_item
-      
+      include_tasks: zone-update.yaml
+      vars:
+        zone: "{{ outer_item }}"
+      with_items: 
+        - "{{ zones }}"
+      loop_control:
+        loop_var: outer_item
       when: ansible_hostname == "ns1"
         
 
@@ -82,4 +82,4 @@
     - name: reload_bind
       service: 
         name: bind9 
-        state: reloaded
+        state: restarted
