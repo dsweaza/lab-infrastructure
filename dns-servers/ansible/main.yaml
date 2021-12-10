@@ -65,7 +65,15 @@
         dest: /etc/bind/named.conf.local
       notify: reload_bind
       when: ansible_hostname != "ns1"
-        
+    
+    - name: RNDC Sync
+      shell: "rndc sync"
+      changed_when: false
+
+    - name: RNDC Freeze Zones
+      shell: "rndc freeze"
+      changed_when: false
+
     - name: Configure Master Zone Files
       include_tasks: zone-update.yaml
       vars:
@@ -75,6 +83,10 @@
       loop_control:
         loop_var: outer_item
       when: ansible_hostname == "ns1"
+
+    - name: RNDC Thaw Zones
+      shell: "rndc thaw"
+      changed_when: false
     
     - name: Force all notified handlers to run at this point, not waiting for normal sync points
       meta: flush_handlers
