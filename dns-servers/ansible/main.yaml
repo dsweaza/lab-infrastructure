@@ -75,11 +75,22 @@
       loop_control:
         loop_var: outer_item
       when: ansible_hostname == "ns1"
-        
+    
+    - name: Force all notified handlers to run at this point, not waiting for normal sync points
+      meta: flush_handlers
 
+    - name: Collecting Service Facts
+      service_facts:
+      register: services_state
+
+    - name: Named.service Status
+      debug:
+        var: services_state.ansible_facts.services['named.service'].state
+    
 
   handlers:
     - name: reload_bind
       service: 
         name: bind9 
         state: restarted
+        

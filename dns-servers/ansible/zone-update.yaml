@@ -27,8 +27,8 @@
   lineinfile:
     path: /var/lib/bind/zones/db.{{ zone.domain }}
     state: "{{ item.record_state | default(omit) }}"
-    regexp: \b{{ item.host }}\.{{ zone.domain }}\b
-    line: "{{ item.host }}.{{ zone.domain }}. IN {{ item.type }} {{ item.value }}"
+    regexp: \b{{ item.host }}\b
+    line: "{{ item.host }} IN {{ item.type }} {{ item.value }}"
   with_items:
     - "{{ records }}"
   #when: zone_file_exists.stat.exists == true
