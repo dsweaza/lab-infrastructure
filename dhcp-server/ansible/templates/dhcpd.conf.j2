@@ -31,7 +31,7 @@ subnet {{ subnet.subnet }} netmask {{ subnet.netmask }} {
     option routers {{ subnet.options.routers | join(", ") }};
     option domain-name-servers  {{ subnet.options.dns | join(", ") }};
     option domain-name "{{ subnet.options.search_domain }}";
-    ddns-domainname "{{ subnet.ddns.domainname }}";
-    ddns-rev-domainname "{{ subnet.ddns.revdomainname }}";
+    ddns-domainname "{{ subnet.ddns.domainname }}.";
+    ddns-rev-domainname "{{ subnet.ddns.revdomainname }}.";
 }
 {% endfor %}
