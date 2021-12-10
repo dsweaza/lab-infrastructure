@@ -7,7 +7,12 @@ variable "vm_names" {
 variable "vm_ipv4_addresses" {
     description = "List of CIDR IPv4 Addresses for DNS Servers"
     type = list(string)
-    default = ["10.0.20.4/24"]
+    default = ["10.0.20.4"]
+}
+
+variable "vm_ipv4_addresses_cidr" {
+    default = "/24"
+    type    = string
 }
 
 variable "vm_disk_size_gb" {

@@ -1,3 +1,12 @@
+provider "dns" {
+  update {
+    server        = "10.0.20.5"
+    key_name      = "dylanlab.xyz."
+    key_algorithm = "hmac-sha256"
+    key_secret    = "QZnULB75ySdwR1CNHx3Bjx6CXJKQBa/jcjTfPceoBXU="
+  }
+}
+
 data "xenorchestra_pool" "pool" {
   name_label = "xcp-ng-01"
 }
@@ -52,7 +61,7 @@ network:
       name: eth0
       subnets:
         - type: static
-          address: ${var.vm_ipv4_addresses[count.index]}
+          address: ${var.vm_ipv4_addresses[count.index]}${var.vm_ipv4_addresses_cidr}
           gateway: ${var.default_gateway}
           dns_nameservers:
             - 10.0.20.5
@@ -81,6 +90,16 @@ resource "xenorchestra_vm" "server" {
         name_label = "${var.vm_names[count.index]}"
         size = var.vm_disk_size_gb * 1024 * 1024 * 1024 # GB to B
     }
+}
+
+resource "dns_a_record_set" "vm_dns" {
+  count = length(var.vm_names)
+
+  zone = "${var.dns_search_domain}."
+  name = "${var.vm_names[count.index]}"
+  addresses = [
+    "${var.vm_ipv4_addresses[count.index]}",
+  ]
 }
 
 output "instance_hostnames" {
