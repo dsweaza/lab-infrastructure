@@ -1,6 +1,6 @@
 ---
 keys:
-  - name: rndc-key
+  - name: dylanlab.xyz.
     algorithm: hmac-sha256
     secret: QZnULB75ySdwR1CNHx3Bjx6CXJKQBa/jcjTfPceoBXU=
   
