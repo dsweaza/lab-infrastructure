@@ -4,12 +4,18 @@
 # BASE DOMAIN: 20.0.10.in-addr.arpa
 ---
 records:
-  - host: 33
-    type: PTR
-    value: test333.dylanlab.xyz.
-    record_state: present
   
-  - host: 35
+  - host: 123
     type: PTR
-    value: test335.dylanlab.xyz.
+    value: xoa.dylanlab.xyz.
+    record_state: present
+
+  - host: 17
+    type: PTR
+    value: netbox.dylanlab.xyz.
+    record_state: present
+
+  - host: 123
+    type: 15
+    value: ovpn.dylanlab.xyz.
     record_state: present
