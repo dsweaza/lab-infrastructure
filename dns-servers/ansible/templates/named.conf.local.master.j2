@@ -1,5 +1,7 @@
 # MASTER SERVER - named.conf.local
 
+include "/etc/bind/rndc.key";
+
 {% for zone in zones %}
 zone "{{ zone.domain }}" {
     type master;
@@ -16,7 +18,7 @@ zone "{{ zone.domain }}" {
     {% if zone.bind9allowupdate is defined or zone.rndckey is defined %}
     allow-update { 
         {% if zone.rndckey is defined %}
-        key {{ zone.rndckey }}
+        key {{ zone.rndckey }};
         {% endif %}
         {% if zone.bind9allowupdate is iterable %}
         {% for allowupdate in zone.bind9allowupdate %}

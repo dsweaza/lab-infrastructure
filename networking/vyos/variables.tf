@@ -1,15 +1,19 @@
-variable "vm_names" {
-    description = "List of DHCP server FQDNs"
-    type = list(string)
-    default = ["dhcp.example.com"]
+variable "vm_count" {
+    description = "Count of VMs"
+    type = number
+    default = 1
 }
 
-variable "vm_ipv4_addresses" {
-    description = "List of CIDR IPv4 Addresses for DNS Servers"
-    type = list(string)
-    default = ["10.0.20.4"]
+variable "vm_hostname_prefix" {
+    type = string
+    default = "vyos-test"
 }
 
+
+
+/*
+* DEFAULT GLOBAL VARIABLES BELOW
+*/
 variable "vm_ipv4_addresses_cidr" {
     default = "/24"
     type    = string

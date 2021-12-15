@@ -1,6 +1,6 @@
 variable "vm_count" {
     type = number
-    default = 1
+    default = 3
 }
 
 variable "vm_name_prefix" {
@@ -13,14 +13,26 @@ variable "dns_suffix" {
     default = ".dylanlab.xyz"
 }
 
+variable "username_ansible" {
+    description = "Ansible account username"
+    type = string
+    default = "ansible"
+}
+
 variable "public_key_ansible" {
     type = string
-    description = "Ansibles authorized key - from env"
+    description = "Ansible account authorized key"
+}
+
+variable "username_admin" {
+    description = "Administrator account username"
+    type = string
+    default = "admin"
 }
 
 variable "public_key_admin" {
     type = string
-    description = "Dylan authorized key - from env"
+    description = "Administrator account authorized key"
 }
 
 # Instruct terraform to download the provider on `terraform init`
@@ -54,7 +66,7 @@ data "xenorchestra_network" "network" {
 
 resource "random_id" "vm_id" {
     count = var.vm_count
-    byte_length = 2
+    byte_length = 8
 }
 
 resource "xenorchestra_cloud_config" "cloud_config" {
@@ -62,23 +74,28 @@ resource "xenorchestra_cloud_config" "cloud_config" {
     name = "DNS Cloud Config"
     template = <<EOF
 #cloud-config
-hostname: ${var.vm_name_prefix}${random_id.vm_id[count.index].hex}${var.dns_suffix}
+hostname: ${var.vm_name_prefix}${random_id.vm_id[count.index].hex}
 users:
-  - name: dylan
-    gecos: dylan
+  - name: ${var.username_admin}
+    gecos: ${var.username_admin}
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
       - ${var.public_key_admin}
-  - name: ansible
-    gecos: ansible
+  - name: ${var.username_ansible}
+    gecos: ${var.username_ansible}
     shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
     ssh_authorized_keys:
       - ${var.public_key_ansible}
 
+runcmd: 
+  - dhclient -r
+  - dhclient
+
 packages:
   - xe-guest-utilities
+
 EOF
 }
 
@@ -88,10 +105,9 @@ resource "xenorchestra_vm" "server" {
 
     memory_max = 4294967296
     cpus = 2
-    name_label = "${var.vm_name_prefix}${random_id.vm_id[count.index].hex}${var.dns_suffix}"
+    name_label = "${var.vm_name_prefix}${random_id.vm_id[count.index].hex}"
     template = data.xenorchestra_template.vm_template.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
-    #cloud_network_config = xenorchestra_cloud_config.cloud_network_config[count.index].template
 
     network {
         network_id = data.xenorchestra_network.network.id
