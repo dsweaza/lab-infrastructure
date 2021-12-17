@@ -5,6 +5,12 @@ zones:
     bind9allowupdate:
     bind9allowtransfer:
       - 10.0.20.6
+
+  - domain: k8s.dylanlab.xyz
+    rndckey: dylanlab.xyz.
+    bind9allowupdate:
+    bind9allowtransfer:
+      - 10.0.20.6
   
   - domain: 20.0.10.in-addr.arpa
     rndckey: dylanlab.xyz.

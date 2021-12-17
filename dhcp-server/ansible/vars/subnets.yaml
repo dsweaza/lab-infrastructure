@@ -1,5 +1,6 @@
 ---
 subnets:
+#Shopnet
   - subnet: 10.0.20.0
     netmask: 255.255.255.0
     range:
@@ -14,4 +15,22 @@ subnets:
       search_domain: dylanlab.xyz
     ddns:
       domainname: dylanlab.xyz
-      revdomainname: in-addr.arpa #should be 20.0.10.in-addr.arpa?
+      revdomainname: in-addr.arpa
+
+#K8sNet
+  - subnet: 10.1.0.0
+    netmask: 255.255.0.0
+    range:
+      #Reserve the first /24 and the final /24
+      start: 10.1.1.0
+      end: 10.1.254.255
+    options:
+      routers: 
+        - 10.1.0.1
+      dns:
+        - 10.0.20.5
+        - 10.0.20.6
+      search_domain: k8s.dylanlab.xyz
+    ddns:
+      domainname: k8s.dylanlab.xyz
+      revdomainname: in-addr.arpa

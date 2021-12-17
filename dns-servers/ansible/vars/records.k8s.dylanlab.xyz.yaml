@@ -1,0 +1,11 @@
+# Do not include NS records
+# When value is FQDN, include . on end
+#
+# BASE DOMAIN: dylanlab.xyz
+---
+records:
+  
+  - host: api
+    type: CNAME
+    value: us20-k8s-c5a98f227df3b70a.dylanlab.xyz.
+    record_state: present

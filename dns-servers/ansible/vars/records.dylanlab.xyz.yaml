@@ -18,3 +18,13 @@ records:
     type: A
     value: 10.0.20.15
     record_state: present
+
+  - host: k8cluster
+    type: CNAME
+    value: us20-k8s-c5a98f227df3b70a.dylanlab.xyz.
+    record_state: present
+
+  - host: api.k8s
+    type: CNAME
+    value: us20-k8s-c5a98f227df3b70a.dylanlab.xyz.
+    record_state: present
