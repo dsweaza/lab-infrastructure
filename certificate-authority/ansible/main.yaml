@@ -1,0 +1,73 @@
+- name: Configure CA Server
+  hosts: ca.dylanlab.xyz
+  
+  ignore_errors: yes
+  tasks:
+
+    #- name: Load Variables
+    #  include_vars: "{{ item }}"
+    #  with_items:
+    #    - "vars/subnets.yaml"
+
+
+    - name: Apt Update
+      apt:
+        update_cache: yes
+      changed_when: false
+      become: yes
+
+    - name: Install easy-rsa from Apt
+      become: yes
+      apt:
+        name:
+          - easy-rsa
+        state: present
+
+    - name: Symlink folders
+      #become: yes
+      file: 
+        src: /usr/share/easy-rsa
+        dest: /home/ansible/easy-rsa
+        state: link
+        mode: 0700
+        owner: ansible
+        group: ansible
+        force: yes
+        
+
+    - name: Init PKI
+      command: 
+        cmd:
+          ./easyrsa init-pki
+      args:
+        chdir: /home/ansible/easy-rsa
+        creates: /home/ansible/easy-rsa/pki
+
+    - name: Set vars
+      blockinfile:
+        path: /home/ansible/easy-rsa/vars
+        create: yes
+        block: |
+          set_var EASYRSA_REQ_COUNTRY    "US"
+          set_var EASYRSA_REQ_PROVINCE   "California"
+          set_var EASYRSA_REQ_CITY       "Anaheim"
+          set_var EASYRSA_REQ_ORG        "dylanlab.xyz"
+          set_var EASYRSA_REQ_EMAIL      "admin@dylanlab.xyz"
+          set_var EASYRSA_REQ_OU         "Community"
+          set_var EASYRSA_ALGO           "ec"
+          set_var EASYRSA_DIGEST         "sha512"
+    
+    - name: Build CA
+      expect: 
+        command: ./easyrsa build-ca nopass
+        responses:
+            Common Name: "dylanlab.xyz CA"
+        chdir: /home/ansible/easy-rsa
+        creates: /home/ansible/easy-rsa/pki/ca.crt
+
+    - name: Fetch new cert
+      fetch: 
+        src: /home/ansible/easy-rsa/pki/ca.crt
+        dest: ../files/ca-{{ ansible_date_time.epoch }}.crt
+        flat: yes
+  
