@@ -34,3 +34,7 @@ terraform.rc
 
 #Ansible
 *.retry
+
+# Keys and Certs
+*.key
+*.crt
