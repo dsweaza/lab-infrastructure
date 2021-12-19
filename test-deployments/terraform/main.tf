@@ -1,81 +1,62 @@
-
-data "xenorchestra_pool" "pool" {
-    name_label = var.xen_pool_name
+module "example-dynamic" {
+    source = "../../tf-modules/dynamic-instance" // Default: VM created with Terraform
+    vm_name_description = "Example Dynamic Instance"
+    vm_count = 1 
+    #vm_name_prefix = ""
+    #xen_pool_name = ""
+    #xen_template_name = ""
+    #xen_storage_name = ""
+    #xen_network_name = ""
+    #vm_disk_size_gb = ""
+    #vm_memory_size_gb = ""
+    #vm_cpu_count = ""
+    #username_admin = ""
+    #public_key_admin = ""
+    #username_ansible = ""
+    #public_key_ansible = ""
 }
 
-data "xenorchestra_template" "vm_template" {
-    name_label = var.xen_template_name
+module "example-static" {
+    source = "../../tf-modules/static-instance"
+    vm_name_description = "Example Static Instance"
+
+    realm = "dylanlab.xyz"
+    vm_names = ["test1"]
+    vm_ipv4_addresses = ["10.0.20.25"]
+    vm_ipv4_addresses_cidr = 24
+    
+    #default_gateway = ""
+    #dns_server_primary = ""
+    #dns_server_secondary = ""
+    #dns_key_name = ""
+    #dns_key_algorithm = ""
+    #dns_key_secret = ""
+    #xen_pool_name = ""
+    #xen_template_name = ""
+    #xen_storage_name = ""
+    #xen_network_name = ""
+    #vm_disk_size_gb = ""
+    #vm_memory_size_gb = ""
+    #vm_cpu_count = ""
+    #username_admin = ""
+    #public_key_admin = ""
+    #username_ansible = ""
+    #public_key_ansible = ""
+    
 }
 
-data "xenorchestra_sr" "sr" {
-    name_label = var.xen_storage_name
-    pool_id = data.xenorchestra_pool.pool.id
+output "dynamic_hostnames" {
+    value = module.example-dynamic.instance_hostnames
 }
 
-data "xenorchestra_network" "network" {
-    name_label = var.xen_network_name
-    pool_id = data.xenorchestra_pool.pool.id
+output "dynamic_ipv4" {
+    value = module.example-dynamic.instance_ipv4_addresses
 }
 
-resource "random_id" "vm_id" {
-    count = var.vm_count
-    byte_length = 8
+output "vm_hostnames" {
+    value = module.example-static.instance_hostnames
 }
 
-resource "xenorchestra_cloud_config" "cloud_config" {
-    count = var.vm_count
-    name = "DNS Cloud Config"
-    template = <<EOF
-#cloud-config
-hostname: ${var.vm_name_prefix}${random_id.vm_id[count.index].hex}
-users:
-  - name: ${var.username_admin}
-    gecos: ${var.username_admin}
-    shell: /bin/bash
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    ssh_authorized_keys:
-      - ${var.public_key_admin}
-  - name: ${var.username_ansible}
-    gecos: ${var.username_ansible}
-    shell: /bin/bash
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    ssh_authorized_keys:
-      - ${var.public_key_ansible}
-
-packages:
-  - xe-guest-utilities
-
-runcmd:
-  - reboot  
-
-EOF
-}
-
-resource "xenorchestra_vm" "server" {
-    count = var.vm_count
-
-    memory_max = var.vm_memory_size_gb * 1024 * 1024 * 1024 # GB to B
-    cpus = var.vm_cpu_count
-    name_label = "${var.vm_name_prefix}${random_id.vm_id[count.index].hex}"
-    name_description = "Test deployment from Terraform"
-    template = data.xenorchestra_template.vm_template.id
-    cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
-
-    network {
-        network_id = data.xenorchestra_network.network.id
-    }
-
-    disk {
-        sr_id = data.xenorchestra_sr.sr.id
-        name_label = "${var.vm_name_prefix}${random_id.vm_id[count.index].hex}"
-        size = var.vm_disk_size_gb * 1024 * 1024 * 1024 # GB to B
-    }
-}
-
-output "instance_hostnames" {
-    value = xenorchestra_vm.server[*].name_label
-}
-
-output "instance_ipv4_addresses" {
-    value = xenorchestra_vm.server[*].ipv4_addresses
+output "static_ipv4" {
+    value = module.example-static.instance_ipv4_addresses
 }
