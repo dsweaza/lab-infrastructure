@@ -16,6 +16,15 @@ module "example-dynamic" {
     #public_key_ansible = ""
 }
 
+output "dynamic_hostnames" {
+    value = module.example-dynamic.instance_hostnames
+}
+
+output "dynamic_ipv4" {
+    value = module.example-dynamic.instance_ipv4_addresses
+}
+
+
 module "example-static" {
     source = "../../tf-modules/static-instance"
     vm_name_description = "Example Static Instance"
@@ -45,15 +54,7 @@ module "example-static" {
     
 }
 
-output "dynamic_hostnames" {
-    value = module.example-dynamic.instance_hostnames
-}
-
-output "dynamic_ipv4" {
-    value = module.example-dynamic.instance_ipv4_addresses
-}
-
-output "vm_hostnames" {
+output "static_hostnames" {
     value = module.example-static.instance_hostnames
 }
 
