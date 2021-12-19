@@ -85,5 +85,5 @@ output "instance_hostnames" {
 }
 
 output "instance_ipv4_addresses" {
-    value = xenorchestra_vm.server[*].ipv4_addresses[0]
+    value = xenorchestra_vm.server[*].network[0].ipv4_addresses
 }
