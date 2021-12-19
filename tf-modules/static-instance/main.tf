@@ -52,8 +52,8 @@ users:
 packages:
   - xe-guest-utilities
 
-runcmd:
-  - reboot  
+#runcmd: # No reload since no DHCP
+#  - reboot  
 
 EOF
 }
@@ -116,5 +116,5 @@ output "instance_hostnames" {
 }
 
 output "instance_ipv4_addresses" {
-    value = xenorchestra_vm.server[*].network[0].ipv4_addresses
+    value = xenorchestra_vm.server[*].ipv4_addresses
 }

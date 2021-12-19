@@ -2,6 +2,10 @@ module "example-dynamic" {
     source = "../../tf-modules/dynamic-instance" // Default: VM created with Terraform
     vm_name_description = "Example Dynamic Instance"
     vm_count = 1 
+    username_admin = var.username_admin
+    public_key_admin = var.public_key_admin
+    username_ansible = var.username_ansible
+    public_key_ansible = var.public_key_ansible
     #vm_name_prefix = ""
     #xen_pool_name = ""
     #xen_template_name = ""
@@ -10,10 +14,7 @@ module "example-dynamic" {
     #vm_disk_size_gb = ""
     #vm_memory_size_gb = ""
     #vm_cpu_count = ""
-    #username_admin = ""
-    #public_key_admin = ""
-    #username_ansible = ""
-    #public_key_ansible = ""
+
 }
 
 output "dynamic_hostnames" {
@@ -34,6 +35,10 @@ module "example-static" {
     vm_ipv4_addresses = ["10.0.20.25"]
     vm_ipv4_addresses_cidr = 24
     
+    username_admin = var.username_admin
+    public_key_admin = var.public_key_admin
+    username_ansible = var.username_ansible
+    public_key_ansible = var.public_key_ansible    
     #default_gateway = ""
     #dns_server_primary = ""
     #dns_server_secondary = ""
@@ -47,10 +52,6 @@ module "example-static" {
     #vm_disk_size_gb = ""
     #vm_memory_size_gb = ""
     #vm_cpu_count = ""
-    #username_admin = ""
-    #public_key_admin = ""
-    #username_ansible = ""
-    #public_key_ansible = ""
     
 }
 
