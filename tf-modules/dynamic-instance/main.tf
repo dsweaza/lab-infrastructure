@@ -67,7 +67,7 @@ resource "xenorchestra_vm" "server" {
     name_description = "${var.vm_name_description}"
     template = data.xenorchestra_template.vm_template.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
-    wait_for_ip = true
+    #wait_for_ip = true
 
     network {
         network_id = data.xenorchestra_network.network.id
