@@ -1,3 +1,4 @@
+
 module "ca" {
     source = "../../tf-modules/static-instance"
     vm_name_description = "Certificate Authority"

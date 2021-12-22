@@ -5,4 +5,12 @@ terraform {
             version = "0.22.0"
         }
     }
+
+    cloud {
+        organization = "dylanlab"
+        workspaces {
+            name = "lab-infrastructure"
+        }
+    }
+    
 }
