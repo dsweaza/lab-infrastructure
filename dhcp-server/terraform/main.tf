@@ -8,11 +8,11 @@ provider "dns" {
 }
 
 data "xenorchestra_pool" "pool" {
-  name_label = "xcp-ng-01"
+  name_label = "xcp-ng-pool-01"
 }
 
 data "xenorchestra_template" "vm_template" {
-  name_label = "ubuntu-focal-20.04-cloudimg-20211202"
+  name_label = "ubuntu-focal-20.04-cloudimg-20220124"
 }
 
 data "xenorchestra_sr" "sr" {

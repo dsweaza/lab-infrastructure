@@ -1,14 +1,14 @@
 
 data "xenorchestra_pool" "pool" {
-    name_label = "xcp-ng-01"
+    name_label = "xcp-ng-pool-01"
 }
 
-data "xenorchestra_template" "ubuntu_focal_2004_cloudimg_20211202" {
-    name_label = "ubuntu-focal-20.04-cloudimg-20211202"
+data "xenorchestra_template" "ubuntu_focal_2004_cloudimg" {
+    name_label = "ubuntu-focal-20.04-cloudimg-20220124"
 }
 
-data "xenorchestra_sr" "local_storage" {
-    name_label = "Local storage"
+data "xenorchestra_sr" "iscsi_vm_store" {
+    name_label = "iscsi-vm-store"
     pool_id = data.xenorchestra_pool.pool.id
 }
 
@@ -71,7 +71,7 @@ resource "xenorchestra_vm" "server" {
     memory_max = 4294967296
     cpus = 2
     name_label = "${var.hostname_prefix}${(count.index + 1)}.${var.base_domain}"
-    template = data.xenorchestra_template.ubuntu_focal_2004_cloudimg_20211202.id
+    template = data.xenorchestra_template.ubuntu_focal_2004_cloudimg.id
     cloud_config = xenorchestra_cloud_config.cloud_config[count.index].template
     cloud_network_config = xenorchestra_cloud_config.cloud_network_config[count.index].template
 
@@ -80,7 +80,7 @@ resource "xenorchestra_vm" "server" {
     }
 
     disk {
-        sr_id = data.xenorchestra_sr.local_storage.id
+        sr_id = data.xenorchestra_sr.iscsi_vm_store.id
         name_label = "${var.hostname_prefix}${(count.index + 1)}.${var.base_domain}"
         size = 50212254720
     }

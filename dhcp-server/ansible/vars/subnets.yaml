@@ -21,9 +21,9 @@ subnets:
   - subnet: 10.1.0.0
     netmask: 255.255.0.0
     range:
-      #Reserve the first /24 and the final /24
+      #Reserve the first /24 and the final 55 /24s
       start: 10.1.1.0
-      end: 10.1.254.255
+      end: 10.1.250.255
     options:
       routers: 
         - 10.1.0.1

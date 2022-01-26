@@ -10,11 +10,4 @@ terraform {
       version = "3.2.1"
     }
   }
-
-  cloud {
-        organization = "dylanlab"
-        workspaces {
-            name = "lab-infrastructure"
-        }
-    }
 }

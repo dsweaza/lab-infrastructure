@@ -16,6 +16,6 @@ records:
     record_state: present
 
   - host: 123
-    type: 15
+    type: PTR
     value: ovpn.dylanlab.xyz.
     record_state: present
