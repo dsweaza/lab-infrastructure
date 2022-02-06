@@ -10,12 +10,6 @@ variable "vm_name_prefix" {
     default = ""
 }
 
-variable "vm_name_description" {
-    description = "VM Description"
-    type = string
-    default = "VM created with Terraform"
-}
-
 variable "xen_pool_name" {
     description = "XenOrchestra Pool (Default xcp-ng-01)"
     type = string
