@@ -19,9 +19,9 @@ records:
     value: 10.0.20.15
     record_state: present
 
-  - host: k8cluster
+  - host: lb
     type: CNAME
-    value: us20-k8s-c5a98f227df3b70a.dylanlab.xyz.
+    value: us20-3bcb8830e2df65c6.k8s.dylanlab.xyz.
     record_state: present
 
   - host: api.k8s
